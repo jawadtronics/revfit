@@ -6,12 +6,16 @@
     "uploadedAt": "2026-05-09T05:58:40.201Z"
   },
   "analytics": {
-    "playbackSeconds": 376,
-    "watchSeconds": 752,
-    "views": 68,
+    "playbackSeconds": 406,
+    "watchSeconds": 812,
+    "views": 70,
     "earnings": 6
   },
   "logs": [
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:16:18.259Z"
+    },
     {
       "message": "Registered 2 new views.",
       "at": "2026-05-09T06:16:08.859Z"
@@ -107,10 +111,6 @@
     {
       "message": "Registered 2 new views.",
       "at": "2026-05-09T06:02:54.222Z"
-    },
-    {
-      "message": "Registered 2 new views.",
-      "at": "2026-05-09T06:02:44.823Z"
     }
   ]
 }
