@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const express = require("express");
 const multer = require("multer");
+const { createClient } = require("@supabase/supabase-js");
 require("dotenv").config();
 
 const app = express();
@@ -10,6 +11,18 @@ const isVercelRuntime = Boolean(process.env.VERCEL);
 const uploadsDir = isVercelRuntime ? path.join("/tmp", "bucket") : path.join(__dirname, "public", "bucket");
 const dataDir = isVercelRuntime ? path.join("/tmp", "data") : path.join(__dirname, "data");
 const stateFile = path.join(dataDir, "app-state.json");
+const supabaseUrl = process.env.SUPABASE_URL || "";
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const supabaseBucket = process.env.SUPABASE_BUCKET || "campaign-videos";
+const hasSupabaseStorage = Boolean(supabaseUrl && supabaseServiceRoleKey);
+const supabase = hasSupabaseStorage
+  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    })
+  : null;
 
 const defaultState = {
   currentVideo: null,
@@ -42,7 +55,7 @@ function readState() {
       },
       logs: Array.isArray(parsed.logs) ? parsed.logs : [],
     };
-    if (nextState.currentVideo?.path) {
+    if (nextState.currentVideo?.path && nextState.currentVideo.path.startsWith("/bucket/")) {
       const diskPath = path.join(__dirname, "public", nextState.currentVideo.path.replace(/^\//, ""));
       if (!fs.existsSync(diskPath)) {
         nextState.currentVideo = null;
@@ -69,20 +82,17 @@ function pushLog(state, message) {
   ].slice(0, 25);
 }
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadsDir),
-  filename: (_req, file, cb) => {
-    const safeBase = path
-      .basename(file.originalname, path.extname(file.originalname))
-      .replace(/[^a-zA-Z0-9-_]/g, "-")
-      .slice(0, 48) || "campaign";
-    const ext = path.extname(file.originalname) || ".mp4";
-    cb(null, `${Date.now()}-${safeBase}${ext}`);
-  },
-});
+function buildSafeFileName(originalName) {
+  const safeBase = path
+    .basename(originalName, path.extname(originalName))
+    .replace(/[^a-zA-Z0-9-_]/g, "-")
+    .slice(0, 48) || "campaign";
+  const ext = path.extname(originalName) || ".mp4";
+  return `${Date.now()}-${safeBase}${ext}`;
+}
 
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 200 * 1024 * 1024,
   },
@@ -135,15 +145,36 @@ app.post("/api/reset", (_req, res) => {
   res.json(readState());
 });
 
-app.post("/api/upload", upload.single("video"), (req, res) => {
+app.post("/api/upload", upload.single("video"), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: "No video file uploaded." });
     return;
   }
 
+  const fileName = buildSafeFileName(req.file.originalname);
+  let videoPath = "";
+
+  if (supabase) {
+    const objectPath = `campaigns/${fileName}`;
+    const { error } = await supabase.storage.from(supabaseBucket).upload(objectPath, req.file.buffer, {
+      contentType: req.file.mimetype || "video/mp4",
+      upsert: true,
+    });
+    if (error) {
+      res.status(500).json({ error: `Supabase upload failed: ${error.message}` });
+      return;
+    }
+    const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(objectPath);
+    videoPath = data.publicUrl;
+  } else {
+    const diskFilePath = path.join(uploadsDir, fileName);
+    fs.writeFileSync(diskFilePath, req.file.buffer);
+    videoPath = `/bucket/${fileName}`;
+  }
+
   const state = readState();
   state.currentVideo = {
-    path: `/bucket/${req.file.filename}`,
+    path: videoPath,
     mimeType: req.file.mimetype || "video/mp4",
     originalName: req.file.originalname,
     uploadedAt: new Date().toISOString(),
