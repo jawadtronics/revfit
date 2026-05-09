@@ -1,0 +1,19 @@
+{
+  "name": "perfect",
+  "version": "1.0.0",
+  "description": "Cab media MVP without auth",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "multer": "^2.1.1"
+  }
+}

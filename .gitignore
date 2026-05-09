@@ -1,0 +1,4 @@
+node_modules
+.env
+public/bucket/*
+!public/bucket/.gitkeep

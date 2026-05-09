@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driver Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <main class="page stack">
+      <header class="mini-topbar">
+        <a class="mini-link" href="/">Home</a>
+      </header>
+
+      <section class="card stack">
+        <div class="section-head">
+          <p class="eyebrow">Driver Dashboard</p>
+          <h1>Driver Analytics</h1>
+        </div>
+
+        <section class="metrics">
+          <article class="metric">
+            <p class="label">Ad playback time</p>
+            <div class="metric-value" id="driver-playback-time">0s</div>
+          </article>
+          <article class="metric">
+            <p class="label">Watch time</p>
+            <div class="metric-value" id="driver-watch-time">0s</div>
+          </article>
+          <article class="metric">
+            <p class="label">Earnings</p>
+            <div class="metric-value" id="driver-earnings">0</div>
+          </article>
+        </section>
+      </section>
+
+      <section class="card stack">
+        <div class="section-head">
+          <p class="eyebrow">Log Query</p>
+          <h2>Recent playback log</h2>
+        </div>
+        <label class="query-field">
+          Search logs
+          <input id="driver-log-query" type="text" placeholder="Filter by event text" />
+        </label>
+        <div class="table">
+          <div class="table-head">
+            <span>Time</span>
+            <span>Event</span>
+            <span>Earnings</span>
+          </div>
+          <div id="driver-logs"></div>
+        </div>
+      </section>
+    </main>
+    <script src="/js/common.js"></script>
+    <script>
+      (async function () {
+        const { formatDuration, getState } = window.CabMediaApp;
+        const playback = document.getElementById("driver-playback-time");
+        const watch = document.getElementById("driver-watch-time");
+        const earnings = document.getElementById("driver-earnings");
+        const logs = document.getElementById("driver-logs");
+        const query = document.getElementById("driver-log-query");
+        let stateCache = null;
+
+        function paint(state) {
+          stateCache = state;
+          playback.textContent = formatDuration(state.analytics.playbackSeconds);
+          watch.textContent = formatDuration(state.analytics.watchSeconds);
+          earnings.textContent = String(state.analytics.earnings);
+          const search = query.value.trim().toLowerCase();
+          const filteredLogs = (state.logs || []).filter((item) =>
+            !search ? true : item.message.toLowerCase().includes(search),
+          );
+          logs.innerHTML = filteredLogs.length
+            ? filteredLogs
+                .map(
+                  (item) => `
+                    <div class="table-row">
+                      <span>${new Date(item.at).toLocaleTimeString()}</span>
+                      <span>${item.message}</span>
+                      <span>${state.analytics.earnings}</span>
+                    </div>
+                  `,
+                )
+                .join("")
+            : `<div class="empty">${search ? "No matching logs." : "No logs yet."}</div>`;
+        }
+
+        query.addEventListener("input", () => {
+          if (stateCache) paint(stateCache);
+        });
+
+        const state = await getState();
+        paint(state);
+        setInterval(async () => {
+          const liveState = await getState();
+          paint(liveState);
+        }, 1000);
+      })();
+    </script>
+  </body>
+</html>

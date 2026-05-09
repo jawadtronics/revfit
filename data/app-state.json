@@ -1,0 +1,116 @@
+{
+  "currentVideo": {
+    "path": "/bucket/1778306320160-edited.mp4",
+    "mimeType": "video/mp4",
+    "originalName": "edited.mp4",
+    "uploadedAt": "2026-05-09T05:58:40.201Z"
+  },
+  "analytics": {
+    "playbackSeconds": 376,
+    "watchSeconds": 752,
+    "views": 68,
+    "earnings": 6
+  },
+  "logs": [
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:16:08.859Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:15:59.473Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:15:50.085Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:15:40.544Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:15:31.017Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:15:21.477Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:15:12.023Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:15:02.484Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:14:45.565Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:14:36.029Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:14:26.631Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:14:17.244Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:14:07.857Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:13:58.468Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:13:48.928Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:13:39.383Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:04:00.939Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:03:51.395Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:03:41.835Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:03:32.281Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:03:22.722Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:03:13.325Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:03:03.779Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:02:54.222Z"
+    },
+    {
+      "message": "Registered 2 new views.",
+      "at": "2026-05-09T06:02:44.823Z"
+    }
+  ]
+}

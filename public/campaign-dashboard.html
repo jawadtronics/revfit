@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campaign Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <main class="page stack">
+      <header class="mini-topbar">
+        <a class="mini-link" href="/">Home</a>
+      </header>
+
+      <section class="card stack">
+        <div class="section-head">
+          <p class="eyebrow">Campaign Dashboard</p>
+          <h1 id="campaign-title">No uploaded campaign</h1>
+        </div>
+
+        <div class="upload-row">
+          <label>
+            Upload Video
+            <input id="video-input" type="file" accept="video/*" />
+          </label>
+          <button id="upload-button">Upload Video</button>
+        </div>
+
+        <div id="campaign-message"></div>
+
+        <section class="metrics">
+          <article class="metric">
+            <p class="label">Watch time</p>
+            <div class="metric-value" id="campaign-watch-time">0s</div>
+          </article>
+          <article class="metric">
+            <p class="label">Views</p>
+            <div class="metric-value" id="campaign-views">0</div>
+          </article>
+          <article class="metric">
+            <p class="label">Playback time</p>
+            <div class="metric-value" id="campaign-playback-time">0s</div>
+          </article>
+        </section>
+
+        <div id="campaign-preview"></div>
+      </section>
+    </main>
+    <script src="/js/common.js"></script>
+    <script>
+      (async function () {
+        const { formatDuration, getState, renderVideo, setMessage, uploadVideo } = window.CabMediaApp;
+        const input = document.getElementById("video-input");
+        const button = document.getElementById("upload-button");
+        const title = document.getElementById("campaign-title");
+        const preview = document.getElementById("campaign-preview");
+        const watchTime = document.getElementById("campaign-watch-time");
+        const views = document.getElementById("campaign-views");
+        const playbackTime = document.getElementById("campaign-playback-time");
+        let mountedVideoPath = undefined;
+
+        function paint(state) {
+          title.textContent = state.currentVideo?.originalName || "No uploaded campaign";
+          watchTime.textContent = formatDuration(state.analytics.watchSeconds);
+          views.textContent = String(state.analytics.views);
+          playbackTime.textContent = formatDuration(state.analytics.playbackSeconds);
+          if (state.currentVideo?.path !== mountedVideoPath) {
+            mountedVideoPath = state.currentVideo?.path || null;
+            renderVideo(preview, state, "Upload a video here to make it available on the screens.");
+            const video = preview.querySelector("video");
+            if (video) {
+              video.loop = true;
+              video.controls = true;
+            }
+          }
+        }
+
+        button.addEventListener("click", async () => {
+          try {
+            if (!input.files || !input.files[0]) {
+              setMessage("campaign-message", "error", "Choose a video file first.");
+              return;
+            }
+            button.disabled = true;
+            button.textContent = "Uploading...";
+            await uploadVideo(input.files[0]);
+            setMessage("campaign-message", "success", "Video uploaded into the local bucket.");
+            input.value = "";
+            paint(await getState());
+          } catch (error) {
+            setMessage("campaign-message", "error", error.message || "Upload failed.");
+          } finally {
+            button.disabled = false;
+            button.textContent = "Upload Video";
+          }
+        });
+
+        paint(await getState());
+        setInterval(async () => {
+          paint(await getState());
+        }, 1000);
+      })();
+    </script>
+  </body>
+</html>

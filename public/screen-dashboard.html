@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Screen Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body class="screen-only">
+    <main class="screen-grid">
+      <div id="left-screen" data-video-id="left-screen-video"></div>
+      <div id="right-screen" data-video-id="right-screen-video"></div>
+    </main>
+    <script src="/js/common.js"></script>
+    <script>
+      (async function () {
+        const { getState, incrementViews, renderVideo, tickPlayback } = window.CabMediaApp;
+        const left = document.getElementById("left-screen");
+        const right = document.getElementById("right-screen");
+        let tickHandle = null;
+        let mountedPath = undefined;
+        let syncing = false;
+
+        function getLoopLimit(video) {
+          const duration = Number.isFinite(video.duration) ? video.duration : 0;
+          if (!duration || duration <= 0) return 60;
+          return Math.min(duration, 60);
+        }
+
+        async function wireVideos() {
+          const leftVideo = document.getElementById("left-screen-video");
+          const rightVideo = document.getElementById("right-screen-video");
+          if (!leftVideo || !rightVideo) return;
+
+          const syncRestart = async () => {
+            if (syncing) return;
+            syncing = true;
+            await incrementViews(2);
+            leftVideo.currentTime = 0;
+            rightVideo.currentTime = 0;
+            await Promise.allSettled([leftVideo.play(), rightVideo.play()]);
+            syncing = false;
+          };
+
+          const wireSingle = (video) => {
+            video.loop = false;
+            video.controls = false;
+            video.muted = true;
+            video.playsInline = true;
+            video.addEventListener("timeupdate", async () => {
+              if (video.currentTime >= getLoopLimit(video)) {
+                await syncRestart();
+              }
+            });
+            video.addEventListener("ended", syncRestart);
+          };
+          wireSingle(leftVideo);
+          wireSingle(rightVideo);
+
+          const startBoth = async () => {
+            await Promise.allSettled([leftVideo.play(), rightVideo.play()]);
+          };
+          await startBoth();
+
+          if (!tickHandle) {
+            tickHandle = setInterval(async () => {
+              await tickPlayback(1, 2);
+            }, 1000);
+          }
+        }
+
+        async function refresh() {
+          const state = await getState();
+          if (state.currentVideo?.path !== mountedPath) {
+            mountedPath = state.currentVideo?.path || null;
+            renderVideo(left, state, "");
+            renderVideo(right, state, "");
+            await wireVideos();
+          }
+        }
+
+        await refresh();
+        setInterval(refresh, 3000);
+      })();
+    </script>
+  </body>
+</html>
