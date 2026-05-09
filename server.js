@@ -6,8 +6,9 @@ require("dotenv").config();
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
-const uploadsDir = path.join(__dirname, "public", "bucket");
-const dataDir = path.join(__dirname, "data");
+const isVercelRuntime = Boolean(process.env.VERCEL);
+const uploadsDir = isVercelRuntime ? path.join("/tmp", "bucket") : path.join(__dirname, "public", "bucket");
+const dataDir = isVercelRuntime ? path.join("/tmp", "data") : path.join(__dirname, "data");
 const stateFile = path.join(dataDir, "app-state.json");
 
 const defaultState = {
@@ -89,6 +90,7 @@ const upload = multer({
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/bucket", express.static(uploadsDir));
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });

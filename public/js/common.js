@@ -14,6 +14,17 @@
     return `${minutes}m ${remainder}s`;
   }
 
+  async function parseResponse(response) {
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      return response.json();
+    }
+    const text = await response.text();
+    return {
+      error: text.includes("Internal Server Error") ? "Server failed to process the request." : text,
+    };
+  }
+
   async function uploadVideo(file) {
     const formData = new FormData();
     formData.append("video", file);
@@ -21,7 +32,7 @@
       method: "POST",
       body: formData,
     });
-    const data = await response.json();
+    const data = await parseResponse(response);
     if (!response.ok) {
       throw new Error(data.error || "Upload failed.");
     }
